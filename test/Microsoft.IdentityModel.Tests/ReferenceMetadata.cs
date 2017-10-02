@@ -121,8 +121,7 @@ namespace Microsoft.IdentityModel.Tests
                     {
                         KeyInfo = new KeyInfo
                         {
-                            CertificateData = X509CertificateData1,
-                            Kid = X509CertificateKeyId1
+                            X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateData1 } } },
                         },
                         SignatureValue = AADCommonMetadataSignatureValue,
                         SignedInfo = AADCommonSignedInfo
@@ -132,20 +131,17 @@ namespace Microsoft.IdentityModel.Tests
 
                 configuration.KeyInfos.Add(new KeyInfo
                 {
-                    CertificateData = X509CertificateData1,
-                    Kid = X509CertificateKeyId1
+                    X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateData1 } } },
                 });
 
                 configuration.KeyInfos.Add(new KeyInfo
                 {
-                    CertificateData = X509CertificateData2,
-                    Kid = X509CertificateKeyId2
+                    X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateData2 } } },
                 });
 
                 configuration.KeyInfos.Add(new KeyInfo
                 {
-                    CertificateData = X509CertificateData3,
-                    Kid = X509CertificateKeyId3
+                    X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateData3 } } },
                 });
 
                 foreach(var key in MetadataSigningKeys)
@@ -166,8 +162,7 @@ namespace Microsoft.IdentityModel.Tests
                     {
                         KeyInfo = new KeyInfo
                         {
-                            CertificateData = X509CertificateData1,
-                            Kid = X509CertificateKeyId1
+                            X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateData1 } } },
                         },
                         SignatureValue = AADCommonMetadataSignatureValue,
                     },
@@ -176,20 +171,17 @@ namespace Microsoft.IdentityModel.Tests
 
                 configuration.KeyInfos.Add(new KeyInfo
                 {
-                    CertificateData = X509CertificateData1,
-                    Kid = X509CertificateKeyId1
+                    X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateData1 } } },
                 });
 
                 configuration.KeyInfos.Add(new KeyInfo
                 {
-                    CertificateData = X509CertificateData2,
-                    Kid = X509CertificateKeyId2
+                    X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateData2 } } },
                 });
 
                 configuration.KeyInfos.Add(new KeyInfo
                 {
-                    CertificateData = X509CertificateData3,
-                    Kid = X509CertificateKeyId3
+                    X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateData3 } } },
                 });
 
                 foreach (var key in MetadataSigningKeys)
@@ -240,8 +232,7 @@ namespace Microsoft.IdentityModel.Tests
                     {
                         KeyInfo = new KeyInfo
                         {
-                            Kid = X509CertificateKeyIdAdfsV2,
-                            CertificateData = X509CertificateDataAdfsV2
+                            X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateDataAdfsV2 } } },
                         },
                         SignatureValue = AdfsV2SignatureValue,
                     },
@@ -250,8 +241,7 @@ namespace Microsoft.IdentityModel.Tests
 
                 configuration.KeyInfos.Add(new KeyInfo
                 {
-                    Kid = X509CertificateKeyIdAdfsV2,
-                    CertificateData = X509CertificateDataAdfsV2
+                    X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateDataAdfsV2 } } },
                 });
 
                 configuration.SigningKeys.Add(AdfsV2MetadataSigningKey);
@@ -271,8 +261,7 @@ namespace Microsoft.IdentityModel.Tests
                     {
                         KeyInfo = new KeyInfo
                         {
-                            Kid = X509CertificateKeyIdAdfsV3,
-                            CertificateData = X509CertificateDataAdfsV3
+                            X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateDataAdfsV3 } } },
                         },
                         SignatureValue = AdfsV3SignatureValue,
                     },
@@ -281,8 +270,7 @@ namespace Microsoft.IdentityModel.Tests
 
                 configuration.KeyInfos.Add(new KeyInfo
                 {
-                    Kid = X509CertificateKeyIdAdfsV3,
-                    CertificateData = X509CertificateDataAdfsV3
+                    X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateDataAdfsV3 } } },
                 });
 
                 configuration.SigningKeys.Add(AdfsV3MetadataSigningKey);
@@ -302,8 +290,7 @@ namespace Microsoft.IdentityModel.Tests
                     {
                         KeyInfo = new KeyInfo
                         {
-                            Kid = X509CertificateKeyIdAdfsV4,
-                            CertificateData = X509CertificateDataAdfsV4
+                            X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateDataAdfsV4 } } },
                         },
                         SignatureValue = AdfsV4SignatureValue,
                     },
@@ -312,8 +299,7 @@ namespace Microsoft.IdentityModel.Tests
 
                 configuration.KeyInfos.Add(new KeyInfo
                 {
-                    Kid = X509CertificateKeyIdAdfsV4,
-                    CertificateData = X509CertificateDataAdfsV4
+                    X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { X509CertificateDataAdfsV4 } } },
                 });
 
                 configuration.SigningKeys.Add(AdfsV4MetadataSigningKey);

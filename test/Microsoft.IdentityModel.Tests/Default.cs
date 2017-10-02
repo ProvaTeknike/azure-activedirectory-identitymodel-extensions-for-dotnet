@@ -237,8 +237,7 @@ namespace Microsoft.IdentityModel.Tests
         {
             get => new KeyInfo
             {
-                CertificateData = CertificateData,
-                Kid = "6B740DD01652EECE2737E05DAE36C5D18FCB74C3"
+                X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { CertificateData } } },
             };
         }
 
