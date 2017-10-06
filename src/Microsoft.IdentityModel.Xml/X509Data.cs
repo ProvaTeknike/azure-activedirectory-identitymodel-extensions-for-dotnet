@@ -27,9 +27,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.IdentityModel.Xml
 {
@@ -49,18 +49,26 @@ namespace Microsoft.IdentityModel.Xml
         /// <summary>
         /// Initializes an instance of <see cref="X509Data"/>.
         /// </summary>
-        /// <param name="issuerSerial">the <see cref="IssuerSerial"/>to populate the X509Data.</param>
-        /// <param name="subjectName">the subject name of the X509Data.</param>
-        /// <param name="SKI">the SKI of the X509Data.</param>
-        /// <param name="certificates">the list of X509Certificates belonging to the X509Data.</param>
-        /// <param name="CRL">the CRL belonging to the X509Data.</param>
-        public X509Data(IssuerSerial issuerSerial, string subjectName, string SKI, List<string> certificates, string CRL)
+        public X509Data(X509Certificate2 certificate)
         {
-            IssuerSerial = issuerSerial;
-            SubjectName = subjectName;
-            this.SKI = SKI;
-            Certificates = certificates;
-            this.CRL = CRL;
+            if (certificate != null)
+                Certificates.Add(Convert.ToBase64String(certificate.RawData));
+        }
+
+
+        /// <summary>
+        /// Initializes an instance of <see cref="X509Data"/>.
+        /// </summary>
+        public X509Data(IEnumerable<X509Certificate2> certificates)
+        {
+            if (certificates != null)
+            {
+                foreach (var certificate in certificates)
+                {
+                    if (certificate != null)
+                        Certificates.Add(Convert.ToBase64String(certificate.RawData));
+                }
+            }
         }
 
         /// <summary>
@@ -91,13 +99,9 @@ namespace Microsoft.IdentityModel.Xml
         }
 
         /// <summary>
-        /// Get or sets the 'X509Certificate'(s) value that is a part of 'X509Data'.
+        /// Get the collection of X509Certificates that is associated with 'X509Data'.
         /// </summary>
-        public List<string> Certificates
-        {
-          get;
-          set; 
-        } = new List<string>();
+        public ICollection<string> Certificates { get; } = new Collection<string>();
 
         /// <summary>
         /// Get or sets the 'CRL' value that is a part of 'X509Data'.
@@ -106,6 +110,14 @@ namespace Microsoft.IdentityModel.Xml
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// Checks if an 'X509Data' object is empty.
+        /// </summary>
+        public bool IsEmpty()
+        {
+            return IssuerSerial == null && SKI == null && SubjectName == null && Certificates.Count == 0 && CRL == null;
         }
 
         /// <summary>

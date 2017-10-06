@@ -33,6 +33,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Tokens.Saml;
 using Microsoft.IdentityModel.Tokens.Saml2;
@@ -235,10 +236,10 @@ namespace Microsoft.IdentityModel.Tests
 
         public static KeyInfo KeyInfo
         {
-            get => new KeyInfo
-            {
-                X509Data = new List<X509Data> { new X509Data { Certificates = new List<string> { CertificateData } } },
+            get => new KeyInfo {
+                    X509Data = new List<X509Data> { new X509Data(new X509Certificate2(Convert.FromBase64String(CertificateData))) },
             };
+             
         }
 
         public static string IPAddress

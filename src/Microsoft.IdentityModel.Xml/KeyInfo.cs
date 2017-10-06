@@ -54,8 +54,7 @@ namespace Microsoft.IdentityModel.Xml
         /// <param name="certificate">the <see cref="X509Certificate2"/>to populate the X509Data.</param>
         public KeyInfo(X509Certificate2 certificate)
         {
-            var data = new X509Data();
-            data.Certificates.Add(Convert.ToBase64String(certificate.RawData));
+            var data = new X509Data(certificate);
             X509Data.Add(data);
         }
 

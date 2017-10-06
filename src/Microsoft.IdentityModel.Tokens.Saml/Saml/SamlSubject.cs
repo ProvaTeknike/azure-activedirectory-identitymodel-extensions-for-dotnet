@@ -278,13 +278,10 @@ namespace Microsoft.IdentityModel.Tokens.Saml
             hashCode ^= (subject.ConfirmationData == null) ? defaultHash : subject.ConfirmationData.GetHashCode();
 
             if (subject.KeyInfo != null)
-            {
                 hashCode ^= subject.KeyInfo.GetHashCode();
-            }
+
             foreach (var method in subject.ConfirmationMethods)
-            {
                 hashCode ^= method.GetHashCode();
-            }
 
             return hashCode.GetHashCode();
         }
