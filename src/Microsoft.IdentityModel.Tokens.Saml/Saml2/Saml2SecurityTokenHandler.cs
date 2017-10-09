@@ -32,6 +32,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
 using Microsoft.IdentityModel.Logging;
@@ -420,21 +421,33 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (samlToken.Assertion == null)
                 throw LogArgumentNullException(nameof(samlToken.Assertion));
 
-            // TODO: Figure out how to match signing key with KeyInfo without using KeyId.
-            //if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && !string.IsNullOrEmpty(samlToken.Assertion.Signature.KeyInfo.Kid))
-            //{
-            //    if (validationParameters.IssuerSigningKey != null && string.Equals(validationParameters.IssuerSigningKey.KeyId, samlToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal))
-            //        return validationParameters.IssuerSigningKey;
+            //TODO: Figure out how to match signing key with KeyInfo without using KeyId.
+            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+                {
+                    if (validationParameters.IssuerSigningKey != null)
+                    {
+                        foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
+                        {
+                            foreach (var certificate in data.Certificates)
+                            {
+                                if (new X509Certificate2(Convert.FromBase64String(certificate)).Thumbprint.Equals(validationParameters.IssuerSigningKey.Certificate)
+                            }
+                        }
+                        return validationParameters.IssuerSigningKey;
 
-            //    if (validationParameters.IssuerSigningKeys != null)
-            //    {
-            //        foreach (var key in validationParameters.IssuerSigningKeys)
-            //        {
-            //            if (key != null && string.Equals(key.KeyId, samlToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal))
-            //                return key;
-            //        }
-            //    }
-            //}
+                    }
+                //&& string.Equals(validationParameters.IssuerSigningKey.KeyId, samlToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal))
+
+
+                if (validationParameters.IssuerSigningKeys != null)
+                    {
+                        foreach (var key in validationParameters.IssuerSigningKeys)
+                        {
+                            if (key != null && string.Equals(key.KeyId, samlToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal))
+                                return key;
+                        }
+                    }
+                }
 
             return null;
         }
