@@ -32,6 +32,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
@@ -421,36 +422,150 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (samlToken.Assertion == null)
                 throw LogArgumentNullException(nameof(samlToken.Assertion));
 
-            //TODO: Figure out how to match signing key with KeyInfo without using KeyId.
-            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+            if (validationParameters.IssuerSigningKey is X509SecurityKey)
+            {
+                var key = validationParameters.IssuerSigningKey as X509SecurityKey;
+                var securityKey = ResolveX509SecurityKey(key, samlToken, validationParameters);
+                if (securityKey != null)
+                    return securityKey;
+                
+            }
+            else if (validationParameters.IssuerSigningKey is RsaSecurityKey)
+            {
+                var key = validationParameters.IssuerSigningKey as RsaSecurityKey;
+                var securityKey = ResolveRSASecurityKey(key, samlToken, validationParameters);
+                return securityKey;
+            } else if (validationParameters.IssuerSigningKey is JsonWebKey)
+            {
+                var key = validationParameters.IssuerSigningKey as JsonWebKey;
+                var securityKey = ResolveJsonWebKey(key, samlToken, validationParameters);
+                if (securityKey != null)
                 {
-                    if (validationParameters.IssuerSigningKey != null)
+                    return securityKey;
+                }
+            }
+            if (validationParameters.IssuerSigningKeys != null)
+            {
+                foreach (var key in validationParameters.IssuerSigningKeys)
+                {
+                    if (key is X509SecurityKey)
                     {
-                        foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
-                        {
-                            foreach (var certificate in data.Certificates)
-                            {
-                                if (new X509Certificate2(Convert.FromBase64String(certificate)).Thumbprint.Equals(validationParameters.IssuerSigningKey.Certificate)
-                            }
-                        }
-                        return validationParameters.IssuerSigningKey;
+                        var x509SecurityKey = validationParameters.IssuerSigningKey as X509SecurityKey;
+                        var securityKey = ResolveX509SecurityKey(x509SecurityKey, samlToken, validationParameters);
+                        if (securityKey != null)
+                            return securityKey;
 
                     }
-                //&& string.Equals(validationParameters.IssuerSigningKey.KeyId, samlToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal))
-
-
-                if (validationParameters.IssuerSigningKeys != null)
+                    else if (key is RsaSecurityKey)
                     {
-                        foreach (var key in validationParameters.IssuerSigningKeys)
+                        var rsaSecurityKey = validationParameters.IssuerSigningKey as RsaSecurityKey;
+                        var securityKey = ResolveRSASecurityKey(rsaSecurityKey, samlToken, validationParameters);
+                        return securityKey;
+                    }
+                    else if (key is JsonWebKey)
+                    {
+                        var jsonWebKey = validationParameters.IssuerSigningKey as JsonWebKey;
+                        var securityKey = ResolveJsonWebKey(jsonWebKey, samlToken, validationParameters);
+                        if (securityKey != null)
                         {
-                            if (key != null && string.Equals(key.KeyId, samlToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal))
-                                return key;
+                            return securityKey;
                         }
                     }
                 }
+            }
 
             return null;
         }
+
+        /// <summary>
+        /// Returns a <see cref="SecurityKey"/> to use for validating the signature of a token.
+        /// </summary>
+        protected virtual SecurityKey ResolveX509SecurityKey(X509SecurityKey key, Saml2SecurityToken samlToken, TokenValidationParameters validationParameters)
+        {
+            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+            {
+                foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
+                {
+                    foreach (var certificate in data.Certificates)
+                    {
+                        if (new X509Certificate2(Convert.FromBase64String(certificate)).Thumbprint.Equals(key.Certificate))
+                        {
+                            return validationParameters.IssuerSigningKey;
+                        }
+
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="SecurityKey"/> to use for validating the signature of a token.
+        /// </summary>
+        protected virtual SecurityKey ResolveRSASecurityKey(RsaSecurityKey key, Saml2SecurityToken samlToken, TokenValidationParameters validationParameters)
+        {
+            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+            {
+                foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
+                {
+                    foreach (var certificate in data.Certificates)
+                    {
+                        var cert = new X509Certificate2(Convert.FromBase64String(certificate));
+                        RSACryptoServiceProvider provider = cert.PublicKey.Key as RSACryptoServiceProvider;
+                        if (provider != null)
+                        {
+                            RSAParameters parameters = provider.ExportParameters(false);
+                            byte[] exponent = parameters.Exponent;
+                            byte[] modulus = parameters.Modulus;
+
+                            if (exponent.Equals(key.Parameters.Exponent) && modulus.Equals(key.Parameters.Modulus))
+                                return validationParameters.IssuerSigningKey;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="SecurityKey"/> to use for validating the signature of a token.
+        /// </summary>
+        protected virtual SecurityKey ResolveJsonWebKey(JsonWebKey key, Saml2SecurityToken samlToken, TokenValidationParameters validationParameters)
+        {
+            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+            {
+                foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
+                {
+                    foreach (var certificate1 in data.Certificates)
+                    {
+                        foreach (var certificate2 in key.X5c)
+                        {
+                            var x509Cert = new X509Certificate2(Convert.FromBase64String(certificate2));
+                            if (new X509Certificate2(Convert.FromBase64String(certificate1)).Thumbprint.Equals(x509Cert))
+                            {
+                                return validationParameters.IssuerSigningKey;
+                            }
+                        }
+                        if (key.N != null && key.E != null)
+                        {
+                            var cert = new X509Certificate2(Convert.FromBase64String(certificate1));
+                            RSACryptoServiceProvider provider = cert.PublicKey.Key as RSACryptoServiceProvider;
+                            if (provider != null)
+                            {
+                                RSAParameters parameters = provider.ExportParameters(false);
+                                byte[] exponent = parameters.Exponent;
+                                byte[] modulus = parameters.Modulus;
+
+                                if (exponent.Equals(Base64UrlEncoder.DecodeBytes(key.E)) && modulus.Equals(Base64UrlEncoder.DecodeBytes(key.N)))
+                                    return validationParameters.IssuerSigningKey;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
 
         /// <summary>
         /// Converts a string into an instance of <see cref="Saml2SecurityToken"/>.
