@@ -589,6 +589,45 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                     },
                     new Saml2TheoryData
                     {
+                        Handler = new Saml2SecurityTokenHandler(),
+                        TestId = $"{nameof(ReferenceTokens.Saml2Token_Valid)} IssuerSigningKey Rsa",
+                        Token = ReferenceTokens.Saml2Token_Valid,
+                        ValidationParameters = new TokenValidationParameters
+                        {
+                            IssuerSigningKey = ReferenceXml.DefaultRsaSecurityKey,
+                            ValidateIssuer = false,
+                            ValidateAudience = false,
+                            ValidateLifetime = false,
+                        }
+                    },
+                    new Saml2TheoryData
+                    {
+                        Handler = new Saml2SecurityTokenHandler(),
+                        TestId = $"{nameof(ReferenceTokens.Saml2Token_Valid)} IssuerSigningKey JsonCertificate",
+                        Token = ReferenceTokens.Saml2Token_Valid,
+                        ValidationParameters = new TokenValidationParameters
+                        {
+                            IssuerSigningKey = ReferenceXml.DefaultJsonWebKeyWithCertificate,
+                            ValidateIssuer = false,
+                            ValidateAudience = false,
+                            ValidateLifetime = false,
+                        }
+                    },
+                    new Saml2TheoryData
+                    {
+                        Handler = new Saml2SecurityTokenHandler(),
+                        TestId = $"{nameof(ReferenceTokens.Saml2Token_Valid)} IssuerSigningKey JsonParameters",
+                        Token = ReferenceTokens.Saml2Token_Valid,
+                        ValidationParameters = new TokenValidationParameters
+                        {
+                            IssuerSigningKey = ReferenceXml.DefaultJsonWebKeyWithParameters,
+                            ValidateIssuer = false,
+                            ValidateAudience = false,
+                            ValidateLifetime = false,
+                        }
+                    },
+                    new Saml2TheoryData
+                    {
                         ExpectedException = ExpectedException.SecurityTokenInvalidSignatureException("IDX10503:"),
                         Handler = new Saml2SecurityTokenHandler(),
                         TestId = nameof(ReferenceTokens.Saml2Token_AttributeTampered),
