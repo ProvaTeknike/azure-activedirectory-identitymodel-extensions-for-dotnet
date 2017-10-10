@@ -1069,8 +1069,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml
                 return validatedSaml;
             }
 
-            if (samlToken.Assertion.Signature == null && validationParameters.RequireSignedTokens)
-                throw LogExceptionMessage(new SecurityTokenValidationException(FormatInvariant(TokenLogMessages.IDX10504, token)));
+            if (samlToken.Assertion.Signature == null)
+            {
+                if (validationParameters.RequireSignedTokens)
+                    throw LogExceptionMessage(new SecurityTokenValidationException(FormatInvariant(TokenLogMessages.IDX10504, token)));
+                else
+                    return samlToken;
+            }
 
             //bool keyMatched = false;
             IEnumerable<SecurityKey> securityKeys = null;
