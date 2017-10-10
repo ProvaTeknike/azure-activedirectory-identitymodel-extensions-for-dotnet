@@ -529,17 +529,17 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         }
                     },
                     // Removed until we have a way of matching a KeyInfo with a SecurityKey.
-                    //new SamlTheoryData
-                    //{
-                    //    ExpectedException = ExpectedException.SecurityTokenSignatureKeyNotFoundException("IDX10501:"),
-                    //    Handler = new SamlSecurityTokenHandler(),
-                    //    TestId = nameof(ReferenceTokens.SamlToken_Valid),
-                    //    Token = ReferenceTokens.SamlToken_Valid,
-                    //    ValidationParameters = new TokenValidationParameters
-                    //    {
-                    //        IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
-                    //    }
-                    //},
+                    new SamlTheoryData
+                    {
+                        ExpectedException = ExpectedException.SecurityTokenSignatureKeyNotFoundException("IDX10501:"),
+                        Handler = new SamlSecurityTokenHandler(),
+                        TestId = nameof(ReferenceTokens.SamlToken_Valid),
+                        Token = ReferenceTokens.SamlToken_Valid,
+                        ValidationParameters = new TokenValidationParameters
+                        {
+                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                        }
+                    },
                     new SamlTheoryData
                     {
                         ExpectedException = ExpectedException.SecurityTokenInvalidSignatureException("IDX10503:"),
