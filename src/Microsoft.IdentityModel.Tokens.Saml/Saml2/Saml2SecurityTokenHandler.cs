@@ -328,7 +328,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (samlToken.Assertion.Signature == null && validationParameters.RequireSignedTokens)
                 throw LogExceptionMessage(new SecurityTokenValidationException(FormatInvariant(TokenLogMessages.IDX10504, token)));
 
-            //bool keyMatched = false;
+            bool keyMatched = false;
             IEnumerable<SecurityKey> keys = null;
             if (validationParameters.IssuerSigningKeyResolver != null)
                 keys = validationParameters.IssuerSigningKeyResolver(token, samlToken, samlToken.SigningKey.KeyId, validationParameters);
@@ -338,7 +338,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 if (key != null)
                 {
                     // remember that key was matched for throwing exception SecurityTokenSignatureKeyNotFoundException
-                    //keyMatched = true;
+                    keyMatched = true;
                     keys = new List<SecurityKey> { key };
                 }
             }
@@ -373,15 +373,22 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 if (key != null)
                 {
                     keysAttempted.AppendLine(key.ToString() + " , KeyId: " + key.KeyId);
-                // TODO: Figure out how to match signing key with KeyInfo without using Kid.
-                //    if (canMatchKey && !keyMatched && key.KeyId != null)
-                //        keyMatched = key.KeyId.Equals(samlToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal);
+                    // TODO: Figure out how to match signing key with KeyInfo without using Kid.
+                    if (canMatchKey && !keyMatched && key.KeyId != null)
+                    {
+                        if (key is X509SecurityKey)
+                            keyMatched = ResolveX509SecurityKey((X509SecurityKey)key, samlToken) != null;
+                        else if (key is RsaSecurityKey)
+                            keyMatched = ResolveRsaSecurityKey((RsaSecurityKey)key, samlToken) != null;
+                        else if (key is JsonWebKey)
+                            keyMatched = ResolveJsonWebKey((JsonWebKey)key, samlToken) != null;
+                    }
                 }
             }
 
-            // if there was a key match with what was found in tokenValidationParameters most likely metadata is stale. throw SecurityTokenSignatureKeyNotFoundException
-            //if (!keyMatched && canMatchKey && keysAttempted.Length > 0)
-            //    throw LogExceptionMessage(new SecurityTokenSignatureKeyNotFoundException(FormatInvariant(TokenLogMessages.IDX10501, samlToken.Assertion.Signature.KeyInfo, samlToken)));
+            //if there was a key match with what was found in tokenValidationParameters most likely metadata is stale. throw SecurityTokenSignatureKeyNotFoundException
+            if (!keyMatched && canMatchKey && keysAttempted.Length > 0)
+                throw LogExceptionMessage(new SecurityTokenSignatureKeyNotFoundException(FormatInvariant(TokenLogMessages.IDX10501, samlToken.Assertion.Signature.KeyInfo, samlToken)));
 
             if (keysAttempted.Length > 0)
                 throw LogExceptionMessage(new SecurityTokenInvalidSignatureException(FormatInvariant(TokenLogMessages.IDX10503, keysAttempted, exceptionStrings, samlToken)));
@@ -425,24 +432,22 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (validationParameters.IssuerSigningKey is X509SecurityKey)
             {
                 var key = validationParameters.IssuerSigningKey as X509SecurityKey;
-                var securityKey = ResolveX509SecurityKey(key, samlToken, validationParameters);
+                var securityKey = ResolveX509SecurityKey(key, samlToken);
                 if (securityKey != null)
-                    return securityKey;
-                
+                    return securityKey; 
             }
             else if (validationParameters.IssuerSigningKey is RsaSecurityKey)
             {
                 var key = validationParameters.IssuerSigningKey as RsaSecurityKey;
-                var securityKey = ResolveRSASecurityKey(key, samlToken, validationParameters);
-                return securityKey;
+                var securityKey = ResolveRsaSecurityKey(key, samlToken);
+                if (securityKey != null)
+                    return securityKey;
             } else if (validationParameters.IssuerSigningKey is JsonWebKey)
             {
                 var key = validationParameters.IssuerSigningKey as JsonWebKey;
-                var securityKey = ResolveJsonWebKey(key, samlToken, validationParameters);
+                var securityKey = ResolveJsonWebKey(key, samlToken);
                 if (securityKey != null)
-                {
                     return securityKey;
-                }
             }
             if (validationParameters.IssuerSigningKeys != null)
             {
@@ -451,7 +456,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                     if (key is X509SecurityKey)
                     {
                         var x509SecurityKey = validationParameters.IssuerSigningKey as X509SecurityKey;
-                        var securityKey = ResolveX509SecurityKey(x509SecurityKey, samlToken, validationParameters);
+                        var securityKey = ResolveX509SecurityKey(x509SecurityKey, samlToken);
                         if (securityKey != null)
                             return securityKey;
 
@@ -459,17 +464,16 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                     else if (key is RsaSecurityKey)
                     {
                         var rsaSecurityKey = validationParameters.IssuerSigningKey as RsaSecurityKey;
-                        var securityKey = ResolveRSASecurityKey(rsaSecurityKey, samlToken, validationParameters);
-                        return securityKey;
+                        var securityKey = ResolveRsaSecurityKey(rsaSecurityKey, samlToken);
+                        if (securityKey != null)
+                            return securityKey;
                     }
                     else if (key is JsonWebKey)
                     {
                         var jsonWebKey = validationParameters.IssuerSigningKey as JsonWebKey;
-                        var securityKey = ResolveJsonWebKey(jsonWebKey, samlToken, validationParameters);
+                        var securityKey = ResolveJsonWebKey(jsonWebKey, samlToken);
                         if (securityKey != null)
-                        {
                             return securityKey;
-                        }
                     }
                 }
             }
@@ -480,7 +484,11 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         /// <summary>
         /// Returns a <see cref="SecurityKey"/> to use for validating the signature of a token.
         /// </summary>
-        protected virtual SecurityKey ResolveX509SecurityKey(X509SecurityKey key, Saml2SecurityToken samlToken, TokenValidationParameters validationParameters)
+        /// <param name="key">The <see cref="X509SecurityKey"/> associated with the the validation parameters.</param>
+        /// <param name="samlToken">The <see cref="Saml2SecurityToken"/> that is being validated.</param>
+        /// <returns>Returns a <see cref="SecurityKey"/> to use for signature validation.</returns>
+        /// <remarks>If key fails to resolve, then null is returned</remarks>
+        protected virtual SecurityKey ResolveX509SecurityKey(X509SecurityKey key, Saml2SecurityToken samlToken)
         {
             if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
             {
@@ -488,9 +496,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 {
                     foreach (var certificate in data.Certificates)
                     {
-                        if (new X509Certificate2(Convert.FromBase64String(certificate)).Thumbprint.Equals(key.Certificate))
+                        if (new X509Certificate2(Convert.FromBase64String(certificate)).Thumbprint.Equals(key.Certificate.Thumbprint))
                         {
-                            return validationParameters.IssuerSigningKey;
+                            return key;
                         }
 
                     }
@@ -502,8 +510,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         /// <summary>
         /// Returns a <see cref="SecurityKey"/> to use for validating the signature of a token.
         /// </summary>
-        protected virtual SecurityKey ResolveRSASecurityKey(RsaSecurityKey key, Saml2SecurityToken samlToken, TokenValidationParameters validationParameters)
+        /// <param name="key">The <see cref="RsaSecurityKey"/> associated with the the validation parameters.</param>
+        /// <param name="samlToken">The <see cref="Saml2SecurityToken"/> that is being validated.</param>
+        /// <returns>Returns a <see cref="SecurityKey"/> to use for signature validation.</returns>
+        /// <remarks>If key fails to resolve, then null is returned</remarks>
+        protected virtual SecurityKey ResolveRsaSecurityKey(RsaSecurityKey key, Saml2SecurityToken samlToken)
         {
+#if NET452 || NET45
             if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
             {
                 foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
@@ -519,18 +532,23 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                             byte[] modulus = parameters.Modulus;
 
                             if (exponent.Equals(key.Parameters.Exponent) && modulus.Equals(key.Parameters.Modulus))
-                                return validationParameters.IssuerSigningKey;
+                                return key;
                         }
                     }
                 }
             }
+#endif
             return null;
         }
 
         /// <summary>
         /// Returns a <see cref="SecurityKey"/> to use for validating the signature of a token.
         /// </summary>
-        protected virtual SecurityKey ResolveJsonWebKey(JsonWebKey key, Saml2SecurityToken samlToken, TokenValidationParameters validationParameters)
+        /// <param name="key">The <see cref="JsonWebKey"/> associated with the the validation parameters.</param>
+        /// <param name="samlToken">The <see cref="Saml2SecurityToken"/> that is being validated.</param>
+        /// <returns>Returns a <see cref="SecurityKey"/> to use for signature validation.</returns>
+        /// <remarks>If key fails to resolve, then null is returned</remarks>
+        protected virtual SecurityKey ResolveJsonWebKey(JsonWebKey key, Saml2SecurityToken samlToken)
         {
             if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
             {
@@ -541,11 +559,12 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                         foreach (var certificate2 in key.X5c)
                         {
                             var x509Cert = new X509Certificate2(Convert.FromBase64String(certificate2));
-                            if (new X509Certificate2(Convert.FromBase64String(certificate1)).Thumbprint.Equals(x509Cert))
+                            if (new X509Certificate2(Convert.FromBase64String(certificate1)).Thumbprint.Equals(x509Cert.Thumbprint))
                             {
-                                return validationParameters.IssuerSigningKey;
+                                return key;
                             }
                         }
+#if NET452 || NET45
                         if (key.N != null && key.E != null)
                         {
                             var cert = new X509Certificate2(Convert.FromBase64String(certificate1));
@@ -557,12 +576,14 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                                 byte[] modulus = parameters.Modulus;
 
                                 if (exponent.Equals(Base64UrlEncoder.DecodeBytes(key.E)) && modulus.Equals(Base64UrlEncoder.DecodeBytes(key.N)))
-                                    return validationParameters.IssuerSigningKey;
+                                    return key;
                             }
                         }
+#endif
                     }
                 }
             }
+
             return null;
         }
 
