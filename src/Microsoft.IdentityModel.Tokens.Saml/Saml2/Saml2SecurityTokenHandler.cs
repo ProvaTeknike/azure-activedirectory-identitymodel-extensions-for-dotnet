@@ -516,7 +516,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         /// <remarks>If key fails to resolve, then null is returned</remarks>
         protected virtual SecurityKey ResolveRsaSecurityKey(RsaSecurityKey key, Saml2SecurityToken samlToken)
         {
-#if NET452 || NET45
             if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
             {
                 foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
@@ -524,20 +523,25 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                     foreach (var certificate in data.Certificates)
                     {
                         var cert = new X509Certificate2(Convert.FromBase64String(certificate));
-                        RSACryptoServiceProvider provider = cert.PublicKey.Key as RSACryptoServiceProvider;
-                        if (provider != null)
+                        AsymmetricAlgorithm publicKey;
+#if NETSTANDARD1_4
+                        publicKey = RSACertificateExtensions.GetRSAPublicKey(cert);
+#else
+                        publicKey = cert.PublicKey.Key;
+#endif
+                        RSA rsa = publicKey as RSA;
+                        if (rsa != null)
                         {
-                            RSAParameters parameters = provider.ExportParameters(false);
+                            RSAParameters parameters = rsa.ExportParameters(false);
                             byte[] exponent = parameters.Exponent;
                             byte[] modulus = parameters.Modulus;
 
-                            if (exponent.Equals(key.Parameters.Exponent) && modulus.Equals(key.Parameters.Modulus))
+                            if (exponent.SequenceEqual(key.Parameters.Exponent) && modulus.SequenceEqual(key.Parameters.Modulus))
                                 return key;
                         }
                     }
                 }
             }
-#endif
             return null;
         }
 
@@ -564,22 +568,26 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                                 return key;
                             }
                         }
-#if NET452 || NET45
                         if (key.N != null && key.E != null)
                         {
                             var cert = new X509Certificate2(Convert.FromBase64String(certificate1));
-                            RSACryptoServiceProvider provider = cert.PublicKey.Key as RSACryptoServiceProvider;
-                            if (provider != null)
+                            AsymmetricAlgorithm publicKey;
+#if NETSTANDARD1_4
+                            publicKey = RSACertificateExtensions.GetRSAPublicKey(cert);
+#else
+                            publicKey = cert.PublicKey.Key;
+#endif
+                            RSA rsa = publicKey as RSA;
+                            if (rsa != null)
                             {
-                                RSAParameters parameters = provider.ExportParameters(false);
+                                RSAParameters parameters = rsa.ExportParameters(false);
                                 byte[] exponent = parameters.Exponent;
                                 byte[] modulus = parameters.Modulus;
 
-                                if (exponent.Equals(Base64UrlEncoder.DecodeBytes(key.E)) && modulus.Equals(Base64UrlEncoder.DecodeBytes(key.N)))
+                                if (exponent.SequenceEqual(Base64UrlEncoder.DecodeBytes(key.E)) && modulus.SequenceEqual(Base64UrlEncoder.DecodeBytes(key.N)))
                                     return key;
                             }
                         }
-#endif
                     }
                 }
             }
