@@ -33,6 +33,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
 using Microsoft.IdentityModel.Logging;
@@ -844,21 +846,138 @@ namespace Microsoft.IdentityModel.Tokens.Saml
             if (securityToken.Assertion == null)
                 throw LogArgumentNullException(nameof(securityToken.Assertion));
 
-            // TODO: Figure out how to match signingKey with KeyInfo without using Kid.
-            //if (securityToken.Assertion.Signature != null && securityToken.Assertion.Signature.KeyInfo != null && !string.IsNullOrEmpty(securityToken.Assertion.Signature.KeyInfo.Kid))
-            //{
-            //    if (validationParameters.IssuerSigningKey != null && string.Equals(validationParameters.IssuerSigningKey.KeyId, securityToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal))
-            //        return validationParameters.IssuerSigningKey;
+            var securityKey = MatchKeyTypeAndResolve(validationParameters.IssuerSigningKey, securityToken);
+            if (securityKey != null)
+                return securityKey;
 
-            //    if (validationParameters.IssuerSigningKeys != null)
-            //    {
-            //        foreach (var signingKey in validationParameters.IssuerSigningKeys)
-            //        {
-            //            if (signingKey != null && string.Equals(signingKey.KeyId, securityToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal))
-            //                return signingKey;
-            //        }
-            //    }
-            //}
+            if (validationParameters.IssuerSigningKeys != null)
+            {
+                foreach (var key in validationParameters.IssuerSigningKeys)
+                {
+                    securityKey = MatchKeyTypeAndResolve(key, securityToken);
+                    if (securityKey != null)
+                        return securityKey;
+                }
+            }
+
+            return null;
+        }
+
+        private SecurityKey MatchKeyTypeAndResolve(SecurityKey key, SamlSecurityToken samlToken)
+        {
+            if (key is X509SecurityKey)
+            {
+                var x509SecurityKey = key as X509SecurityKey;
+                var securityKey = ResolveX509SecurityKey(x509SecurityKey, samlToken);
+                if (securityKey != null)
+                    return securityKey;
+
+            }
+            else if (key is RsaSecurityKey)
+            {
+                var rsaSecurityKey = key as RsaSecurityKey;
+                var securityKey = ResolveRsaSecurityKey(rsaSecurityKey, samlToken);
+                if (securityKey != null)
+                    return securityKey;
+            }
+            else if (key is JsonWebKey)
+            {
+                var jsonWebKey = key as JsonWebKey;
+                var securityKey = ResolveJsonWebKey(jsonWebKey, samlToken);
+                if (securityKey != null)
+                    return securityKey;
+            }
+
+            return null;
+        }
+
+        private SecurityKey ResolveX509SecurityKey(X509SecurityKey key, SamlSecurityToken samlToken)
+        {
+            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+            {
+                foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
+                {
+                    foreach (var certificate in data.Certificates)
+                    {
+                        if (new X509Certificate2(Convert.FromBase64String(certificate)).Thumbprint.Equals(key.Certificate.Thumbprint))
+                            return key;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private SecurityKey ResolveRsaSecurityKey(RsaSecurityKey key, SamlSecurityToken samlToken)
+        {
+            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+            {
+                foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
+                {
+                    foreach (var certificate in data.Certificates)
+                    {
+                        var cert = new X509Certificate2(Convert.FromBase64String(certificate));
+                        AsymmetricAlgorithm publicKey;
+#if NETSTANDARD1_4
+                        publicKey = RSACertificateExtensions.GetRSAPublicKey(cert);
+#else
+                        publicKey = cert.PublicKey.Key;
+#endif
+                        RSA rsa = publicKey as RSA;
+                        if (rsa != null)
+                        {
+                            RSAParameters parameters = rsa.ExportParameters(false);
+                            byte[] exponent = parameters.Exponent;
+                            byte[] modulus = parameters.Modulus;
+
+                            if (exponent.SequenceEqual(key.Parameters.Exponent) && modulus.SequenceEqual(key.Parameters.Modulus))
+                                return key;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private SecurityKey ResolveJsonWebKey(JsonWebKey key, SamlSecurityToken samlToken)
+        {
+            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+            {
+                foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
+                {
+                    foreach (var certificate1 in data.Certificates)
+                    {
+                        foreach (var certificate2 in key.X5c)
+                        {
+                            var x509Cert = new X509Certificate2(Convert.FromBase64String(certificate2));
+                            if (new X509Certificate2(Convert.FromBase64String(certificate1)).Thumbprint.Equals(x509Cert.Thumbprint))
+                                return key; 
+                        }
+
+                        if (key.N != null && key.E != null)
+                        {
+                            var cert = new X509Certificate2(Convert.FromBase64String(certificate1));
+                            AsymmetricAlgorithm publicKey;
+#if NETSTANDARD1_4
+                            publicKey = RSACertificateExtensions.GetRSAPublicKey(cert);
+#else
+                            publicKey = cert.PublicKey.Key;
+#endif
+                            RSA rsa = publicKey as RSA;
+                            if (rsa != null)
+                            {
+                                RSAParameters parameters = rsa.ExportParameters(false);
+                                byte[] exponent = parameters.Exponent;
+                                byte[] modulus = parameters.Modulus;
+
+                                if (exponent.SequenceEqual(Base64UrlEncoder.DecodeBytes(key.E)) && modulus.SequenceEqual(Base64UrlEncoder.DecodeBytes(key.N)))
+                                    return key;
+                            }
+                        }
+                    }
+                }
+            }
 
             return null;
         }
@@ -1072,7 +1191,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml
             if (samlToken.Assertion.Signature == null && validationParameters.RequireSignedTokens)
                 throw LogExceptionMessage(new SecurityTokenValidationException(FormatInvariant(TokenLogMessages.IDX10504, token)));
 
-            //bool keyMatched = false;
+            bool keyMatched = false;
             IEnumerable<SecurityKey> securityKeys = null;
             if (validationParameters.IssuerSigningKeyResolver != null)
             {
@@ -1084,7 +1203,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml
                 if (securityKey != null)
                 {
                     // remember that key was matched for throwing exception SecurityTokenSignatureKeyNotFoundException
-                    //keyMatched = true;
+                    keyMatched = true;
                     securityKeys = new List<SecurityKey> { securityKey };
                 }
             }
@@ -1119,15 +1238,22 @@ namespace Microsoft.IdentityModel.Tokens.Saml
                 if (securityKey != null)
                 {
                     keysAttempted.AppendLine(securityKey.ToString() + " , KeyId: " + securityKey.KeyId);
-                // TODO: Figure out how to match securityKey with KeyInfo without using Kid.
-                //  if (canMatchKey && !keyMatched && securityKey.KeyId != null)
-                //      keyMatched = securityKey.KeyId.Equals(samlToken.Assertion.Signature.KeyInfo.Kid, StringComparison.Ordinal);
+                    // TODO: Figure out how to match securityKey with KeyInfo without using Kid.
+                    if (canMatchKey && !keyMatched && securityKey.KeyId != null)
+                    {
+                        if (securityKey is X509SecurityKey)
+                            keyMatched = ResolveX509SecurityKey((X509SecurityKey)securityKey, samlToken) != null;
+                        else if (securityKey is RsaSecurityKey)
+                            keyMatched = ResolveRsaSecurityKey((RsaSecurityKey)securityKey, samlToken) != null;
+                        else if (securityKey is JsonWebKey)
+                            keyMatched = ResolveJsonWebKey((JsonWebKey)securityKey, samlToken) != null;
+                    }
                 }
             }
 
             // if there was a keymatch with what was found in tokenValidationParameters most likely metadata is stale. throw SecurityTokenSignatureKeyNotFoundException
-            //if (!keyMatched && canMatchKey && keysAttempted.Length > 0)
-            //    throw LogExceptionMessage(new SecurityTokenSignatureKeyNotFoundException(FormatInvariant(TokenLogMessages.IDX10501, samlToken.Assertion.Signature.KeyInfo, samlToken)));
+            if (!keyMatched && canMatchKey && keysAttempted.Length > 0)
+                throw LogExceptionMessage(new SecurityTokenSignatureKeyNotFoundException(FormatInvariant(TokenLogMessages.IDX10501, samlToken.Assertion.Signature.KeyInfo, samlToken)));
 
             if (keysAttempted.Length > 0)
                 throw LogExceptionMessage(new SecurityTokenInvalidSignatureException(FormatInvariant(TokenLogMessages.IDX10503, keysAttempted, exceptionStrings, samlToken)));

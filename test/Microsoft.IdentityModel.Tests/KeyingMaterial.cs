@@ -420,6 +420,63 @@ namespace Microsoft.IdentityModel.Tests
 
         }
 
+        public static SecurityKey DefaultRsaSecurityKey
+        {
+            get
+            {
+                AsymmetricAlgorithm publicKey;
+#if NETSTANDARD1_4
+                publicKey = RSACertificateExtensions.GetRSAPublicKey(DefaultCert_2048);
+#else
+                publicKey = DefaultCert_2048.PublicKey.Key;
+#endif
+                RSA rsa = publicKey as RSA;
+                RSAParameters parameters = rsa.ExportParameters(false);
+                return new RsaSecurityKey(parameters);
+            }
+        }
+
+        public static SecurityKey DefaultJsonWebKeyWithCertificate
+        {
+            get
+            {
+                var jsonWebKey = new JsonWebKey();
+                jsonWebKey.X5c.Add("MIIDJTCCAg2gAwIBAgIQGzlg2gNmfKRKBa6dqqZXxzANBgkqhkiG9w0BAQQFADAiMSAwHgYDVQQDExdLZXlTdG9yZVRlc3RDZXJ0aWZpY2F0ZTAeFw0xMTExMDkxODE5MDZaFw0zOTEyMzEyMzU5NTlaMCIxIDAeBgNVBAMTF0tleVN0b3JlVGVzdENlcnRpZmljYXRlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAns1cm8RU1hKZILPI6pB5Zoxn9mW2tSS0atV+o9FCn9NyeOktEOj1kEXOeIz0KfnqxgPMF1GpshuZBAhgjkyy2kNGE6Zx50CCJgq6XUatvVVJpMp8/FV18ynPf+/TRlF8V2HO3IVJ0XqRJ9fGA2f5xpOweWsdLYitdHbaDCl6IBNSXo52iNuqWAcB1k7jBlsnlXpuvslhLIzj60dnghAVA4ltS3NlFyw1Tz3pGlZQDt7x83IBHe7DA9bV3aJs1trkm1NzI1HoRS4vOqU3n4fn+DlfAE2vYKNkSi/PjuAX+1YQCq6e5uN/hOeSEqji8SsWC2nk/bMTKPwD67rn3jNC9wIDAQABo1cwVTBTBgNVHQEETDBKgBA3gSuALjvEuAVmF/x8knXvoSQwIjEgMB4GA1UEAxMXS2V5U3RvcmVUZXN0Q2VydGlmaWNhdGWCEBs5YNoDZnykSgWunaqmV8cwDQYJKoZIhvcNAQEEBQADggEBAFZvDA7PBh/vvFZb/QCBelTyD2Yqij16v3tk30A3Akli6UIILdbbOcA5BiPktT1kJxcsgSXNHUODlfG2Fy9HTqwunr8G7FYniOUXPVrRL+HwhKOzRFDMUS3+On+ZDzum7rbpm3SYlnJDyNb8wynPw/bXQw72jGjt63uh6OnkYE8fJ8iPfVWOenZkP/IXPIXK/bBwLMDJ1y77ZauPYbp7oiQ/991pn0c7F4ugT9LYmbAdJKhiainOaoBTvIHN8/lMZ8gHUuxvOJhPrbgo3NTqvT1/3kfD0AISP4R3pH0QL/0m7cO34nK4rFFLZs1sFUguYUJhfkyq1N8MiyyAqRmrvBQ=");
+                jsonWebKey.Kty = JsonWebAlgorithmsKeyTypes.RSA;
+                AsymmetricAlgorithm publicKey;
+#if NETSTANDARD1_4
+                publicKey = RSACertificateExtensions.GetRSAPublicKey(DefaultCert_2048);
+#else
+                publicKey = DefaultCert_2048.PublicKey.Key;
+#endif
+                RSA rsa = publicKey as RSA;
+                RSAParameters parameters = rsa.ExportParameters(false);
+                jsonWebKey.E = Base64UrlEncoder.Encode(parameters.Exponent);
+                jsonWebKey.N = Base64UrlEncoder.Encode(parameters.Modulus);
+                return jsonWebKey;
+            }
+        }
+
+        public static SecurityKey DefaultJsonWebKeyWithParameters
+        {
+            get
+            {
+                AsymmetricAlgorithm publicKey;
+#if NETSTANDARD1_4
+                publicKey = RSACertificateExtensions.GetRSAPublicKey(DefaultCert_2048);
+#else
+                publicKey = DefaultCert_2048.PublicKey.Key;
+#endif
+                RSA rsa = publicKey as RSA;
+                RSAParameters parameters = rsa.ExportParameters(false);
+                var jsonWebKey = new JsonWebKey();
+                jsonWebKey.E = Base64UrlEncoder.Encode(parameters.Exponent);
+                jsonWebKey.N = Base64UrlEncoder.Encode(parameters.Modulus);
+                jsonWebKey.Kty = JsonWebAlgorithmsKeyTypes.RSA;
+                return jsonWebKey;
+            }
+        }
+
 #if NET452 || NET45
         public static RsaSecurityKey RsaSecurityKeyWithCspProvider_2048
         {
