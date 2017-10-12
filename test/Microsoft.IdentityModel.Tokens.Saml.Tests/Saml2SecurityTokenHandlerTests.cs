@@ -455,7 +455,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_Valid,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultAADSigningKey,
                             ValidateIssuer = false,
                             ValidateAudience = false,
                             ValidateLifetime = false,
@@ -557,7 +557,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_Valid,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultAADSigningKey,
                             ValidateIssuer = false,
                             ValidateAudience = false,
                             ValidateLifetime = false,
@@ -570,7 +570,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_Valid_Spaces_Added,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultAADSigningKey,
                             ValidateIssuer = false,
                             ValidateAudience = false,
                             ValidateLifetime = false,
@@ -584,7 +584,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_Formated,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultAADSigningKey,
                         }
                     },
                     new Saml2TheoryData
@@ -594,7 +594,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_Valid,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultRsaSecurityKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultRsaSecurityKey2,
                             ValidateIssuer = false,
                             ValidateAudience = false,
                             ValidateLifetime = false,
@@ -607,7 +607,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_Valid,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultJsonWebKeyWithCertificate,
+                            IssuerSigningKey = KeyingMaterial.DefaultJsonWebKeyWithCertificate2,
                             ValidateIssuer = false,
                             ValidateAudience = false,
                             ValidateLifetime = false,
@@ -620,7 +620,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_Valid,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultJsonWebKeyWithParameters,
+                            IssuerSigningKey = KeyingMaterial.DefaultJsonWebKeyWithParameters2,
                             ValidateIssuer = false,
                             ValidateAudience = false,
                             ValidateLifetime = false,
@@ -634,7 +634,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_AttributeTampered,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultAADSigningKey,
                         }
                     },
                     new Saml2TheoryData
@@ -645,7 +645,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_DigestTampered,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultAADSigningKey,
                         }
                     },
                     // Removed until we have a way of matching a SecurityKey with a KeyInfo.
@@ -657,7 +657,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_AttributeTampered_NoKeyMatch,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultAADSigningKey,
                         }
                     },
                     new Saml2TheoryData
@@ -668,7 +668,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.Saml2Token_SignatureTampered,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultAADSigningKey,
                         }
                     }
                 };

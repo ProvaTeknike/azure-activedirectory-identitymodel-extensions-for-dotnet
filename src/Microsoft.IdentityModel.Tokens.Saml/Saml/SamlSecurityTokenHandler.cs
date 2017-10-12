@@ -1238,7 +1238,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml
                 if (securityKey != null)
                 {
                     keysAttempted.AppendLine(securityKey.ToString() + " , KeyId: " + securityKey.KeyId);
-                    // TODO: Figure out how to match securityKey with KeyInfo without using Kid.
                     if (canMatchKey && !keyMatched && securityKey.KeyId != null)
                     {
                         if (securityKey is X509SecurityKey)

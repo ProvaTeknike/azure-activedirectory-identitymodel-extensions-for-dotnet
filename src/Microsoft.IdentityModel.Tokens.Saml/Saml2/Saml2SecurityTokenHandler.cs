@@ -373,7 +373,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 if (key != null)
                 {
                     keysAttempted.AppendLine(key.ToString() + " , KeyId: " + key.KeyId);
-                    // TODO: Figure out how to match signing key with KeyInfo without using Kid.
                     if (canMatchKey && !keyMatched && key.KeyId != null)
                     {
                         if (key is X509SecurityKey)

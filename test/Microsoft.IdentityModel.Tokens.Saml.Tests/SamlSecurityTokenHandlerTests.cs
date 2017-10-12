@@ -499,7 +499,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.SamlToken_Valid,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = KeyingMaterial.DefaultRsaSecurityKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultRsaSecurityKey1,
                             ValidateIssuer = false,
                             ValidateAudience = false,
                             ValidateLifetime = false,
@@ -512,7 +512,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.SamlToken_Valid,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = KeyingMaterial.DefaultJsonWebKeyWithCertificate,
+                            IssuerSigningKey = KeyingMaterial.DefaultJsonWebKeyWithCertificate1,
                             ValidateIssuer = false,
                             ValidateAudience = false,
                             ValidateLifetime = false,
@@ -525,7 +525,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.SamlToken_Valid,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = KeyingMaterial.DefaultJsonWebKeyWithParameters,
+                            IssuerSigningKey = KeyingMaterial.DefaultJsonWebKeyWithParameters1,
                             ValidateIssuer = false,
                             ValidateAudience = false,
                             ValidateLifetime = false,
@@ -575,7 +575,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         Token = ReferenceTokens.SamlToken_Valid,
                         ValidationParameters = new TokenValidationParameters
                         {
-                            IssuerSigningKey = ReferenceXml.DefaultAADSigningKey,
+                            IssuerSigningKey = KeyingMaterial.DefaultAADSigningKey,
                         }
                     },
                     new SamlTheoryData
