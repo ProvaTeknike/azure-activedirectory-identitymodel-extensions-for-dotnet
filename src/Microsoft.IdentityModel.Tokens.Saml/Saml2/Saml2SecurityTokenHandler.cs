@@ -480,7 +480,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 {
                     foreach (var certificate in data.Certificates)
                     {
-                        if (new X509Certificate2(Convert.FromBase64String(certificate)).Thumbprint.Equals(key.Certificate.Thumbprint))
+                        if (new X509Certificate2(Convert.FromBase64String(certificate)).Equals(key.Certificate))
                             return key;
                     }
                 }
@@ -491,31 +491,11 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
 
         private SecurityKey ResolveRsaSecurityKey(RsaSecurityKey key, Saml2SecurityToken samlToken)
         {
-            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.RSAKeyValue != null)
             {
-                foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
-                {
-                    foreach (var certificate in data.Certificates)
-                    {
-                        var cert = new X509Certificate2(Convert.FromBase64String(certificate));
-                        AsymmetricAlgorithm publicKey;
-#if NETSTANDARD1_4
-                        publicKey = RSACertificateExtensions.GetRSAPublicKey(cert);
-#else
-                        publicKey = cert.PublicKey.Key;
-#endif
-                        RSA rsa = publicKey as RSA;
-                        if (rsa != null)
-                        {
-                            RSAParameters parameters = rsa.ExportParameters(false);
-                            byte[] exponent = parameters.Exponent;
-                            byte[] modulus = parameters.Modulus;
-
-                            if (exponent.SequenceEqual(key.Parameters.Exponent) && modulus.SequenceEqual(key.Parameters.Modulus))
-                                return key;
-                        }
-                    }
-                }
+                if (samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Exponent.Equals(Base64UrlEncoder.Encode(key.Parameters.Exponent))
+                    && samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Modulus.Equals(Base64UrlEncoder.Encode(key.Parameters.Modulus)))
+                    return key;
             }
 
             return null;
@@ -523,8 +503,15 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
 
         private SecurityKey ResolveJsonWebKey(JsonWebKey key, Saml2SecurityToken samlToken)
         {
-            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.X509Data.Count != 0)
+            if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null)
             {
+                if (samlToken.Assertion.Signature.KeyInfo.RSAKeyValue != null)
+                {
+                    if (samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Exponent.Equals(Base64UrlEncoder.Encode(key.E))
+                        && samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Modulus.Equals(Base64UrlEncoder.Encode(key.N)))
+                        return key;
+                }
+
                 foreach (var data in samlToken.Assertion.Signature.KeyInfo.X509Data)
                 {
                     foreach (var certificate1 in data.Certificates)
@@ -532,37 +519,15 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                         foreach (var certificate2 in key.X5c)
                         {
                             var x509Cert = new X509Certificate2(Convert.FromBase64String(certificate2));
-                            if (new X509Certificate2(Convert.FromBase64String(certificate1)).Thumbprint.Equals(x509Cert.Thumbprint))
+                            if (new X509Certificate2(Convert.FromBase64String(certificate1)).Equals(x509Cert))
                                 return key;
-                        }
-
-                        if (key.N != null && key.E != null)
-                        {
-                            var cert = new X509Certificate2(Convert.FromBase64String(certificate1));
-                            AsymmetricAlgorithm publicKey;
-#if NETSTANDARD1_4
-                            publicKey = RSACertificateExtensions.GetRSAPublicKey(cert);
-#else
-                            publicKey = cert.PublicKey.Key;
-#endif
-                            RSA rsa = publicKey as RSA;
-                            if (rsa != null)
-                            {
-                                RSAParameters parameters = rsa.ExportParameters(false);
-                                byte[] exponent = parameters.Exponent;
-                                byte[] modulus = parameters.Modulus;
-
-                                if (exponent.SequenceEqual(Base64UrlEncoder.DecodeBytes(key.E)) && modulus.SequenceEqual(Base64UrlEncoder.DecodeBytes(key.N)))
-                                    return key;
-                            }
-                        }
+                        }  
                     }
                 }
             }
 
             return null;
         }
-
 
         /// <summary>
         /// Converts a string into an instance of <see cref="Saml2SecurityToken"/>.
