@@ -912,9 +912,16 @@ namespace Microsoft.IdentityModel.Tokens.Saml
         {
             if (samlToken.Assertion.Signature != null && samlToken.Assertion.Signature.KeyInfo != null && samlToken.Assertion.Signature.KeyInfo.RSAKeyValue != null)
             {
-                if (samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Exponent.Equals(Base64UrlEncoder.Encode(key.Parameters.Exponent))
-                    && samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Modulus.Equals(Base64UrlEncoder.Encode(key.Parameters.Modulus)))
+                if (!key.Parameters.Equals(default(RSAParameters)) && samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Exponent.Equals(Base64UrlEncoder.Encode(key.Parameters.Exponent))
+                     && samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Modulus.Equals(Base64UrlEncoder.Encode(key.Parameters.Modulus)))
                     return key;
+                else if (key.Rsa != null)
+                {
+                    var parameters = key.Rsa.ExportParameters(false);
+                    if (samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Exponent.Equals(Base64UrlEncoder.Encode(parameters.Exponent))
+                    && samlToken.Assertion.Signature.KeyInfo.RSAKeyValue.Modulus.Equals(Base64UrlEncoder.Encode(parameters.Modulus)))
+                        return key;
+                }
             }
 
             return null;
