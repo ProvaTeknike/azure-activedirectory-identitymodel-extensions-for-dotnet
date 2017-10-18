@@ -591,7 +591,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                     {
                         Handler = new Saml2SecurityTokenHandler(),
                         TestId = $"{nameof(ReferenceTokens.Saml2Token_Valid)} IssuerSigningKey Rsa",
-                        Token = ReferenceTokens.Saml2Token_Valid,
+                        Token = ReferenceTokens.Saml2Token_Valid_WithRsaKeyValue,
                         ValidationParameters = new TokenValidationParameters
                         {
                             IssuerSigningKey = KeyingMaterial.DefaultRsaSecurityKey2,
