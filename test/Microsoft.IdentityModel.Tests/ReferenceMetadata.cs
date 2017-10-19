@@ -502,6 +502,8 @@ namespace Microsoft.IdentityModel.Tests
             }
         }
 
+        public static string EmptyEntityDescriptorMetadata = @"<EntityDescriptor xmlns=""urn:oasis:names:tc:SAML:2.0:metadata"" ID=""_6c4f3672-45c2-47a6-9515-afda95224009"" entityID=""https://sts.windows.net/268da1a1-9db4-48b9-b1fe-683250ba90cc/""/>";
+
         public static string AADCommonMetadataFormated
         {
             get

@@ -248,7 +248,10 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation.Tests
             var serializer = new WsFederationMetadataSerializerPublic();
             try
             {
-                serializer.ReadEntityDescriptorPublic(null);
+                XmlReader reader = null;
+                if (theoryData.Metadata != null)
+                    reader = XmlReader.Create(new StringReader(theoryData.Metadata));
+                serializer.ReadEntityDescriptorPublic(reader);
                 theoryData.ExpectedException.ProcessNoException(context);
             }
             catch (Exception ex)
@@ -268,6 +271,12 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation.Tests
                     {
                         ExpectedException = ExpectedException.ArgumentNullException("IDX10000:"),
                         TestId = "ReadEntityDescriptor"
+                    },
+                    new WsFederationMetadataTheoryData
+                    {
+                        ExpectedException = new ExpectedException(typeof(XmlReadException),"IDX22804:"),
+                        Metadata = ReferenceMetadata.EmptyEntityDescriptorMetadata,
+                        TestId = "ReadEmptyEntityDescriptor"
                     }
                 };
             }

@@ -96,6 +96,8 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation
                 throw XmlUtil.LogReadException(LogMessages.IDX22801);
             configuration.Issuer = issuer;
 
+            bool isEmptyElement = reader.IsEmptyElement;
+
             // <EntityDescriptor>
             reader.ReadStartElement();
 
@@ -132,7 +134,8 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation
             }
 
             // </EntityDescriptor>
-            reader.ReadEndElement();
+            if (!isEmptyElement)
+                reader.ReadEndElement();
 
             // The metadata xml should contain a SecurityTokenServiceType RoleDescriptor
             if (!hasSecurityTokenServiceTypeRoleDescriptor)
