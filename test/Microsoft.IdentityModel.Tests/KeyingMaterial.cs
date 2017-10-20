@@ -433,7 +433,7 @@ namespace Microsoft.IdentityModel.Tests
 
         }
 
-#if NET451 || NET452 || NET45
+#if NET452 || NET45
         public static RsaSecurityKey RsaSecurityKeyWithCspProvider_2048
         {
             get
@@ -475,7 +475,7 @@ namespace Microsoft.IdentityModel.Tests
         }
 #endif
 
-#if NETSTANDARD1_4 || NETCOREAPP2_0
+#if NETCOREAPP2_0
         public static RsaSecurityKey RsaSecurityKeyWithCngProvider_2048
         {
             get
@@ -538,7 +538,7 @@ namespace Microsoft.IdentityModel.Tests
             get
             {
                 AsymmetricAlgorithm publicKey;
-#if NETSTANDARD1_4
+#if NETCOREAPP2_0
                 publicKey = RSACertificateExtensions.GetRSAPublicKey(DefaultCert_2048);
 #else
                 publicKey = DefaultCert_2048.PublicKey.Key;
@@ -556,7 +556,7 @@ namespace Microsoft.IdentityModel.Tests
                 var certData = "MIIDBTCCAe2gAwIBAgIQY4RNIR0dX6dBZggnkhCRoDANBgkqhkiG9w0BAQsFADAtMSswKQYDVQQDEyJhY2NvdW50cy5hY2Nlc3Njb250cm9sLndpbmRvd3MubmV0MB4XDTE3MDIxMzAwMDAwMFoXDTE5MDIxNDAwMDAwMFowLTErMCkGA1UEAxMiYWNjb3VudHMuYWNjZXNzY29udHJvbC53aW5kb3dzLm5ldDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMBEizU1OJms31S/ry7iav/IICYVtQ2MRPhHhYknHImtU03sgVk1Xxub4GD7R15i9UWIGbzYSGKaUtGU9lP55wrfLpDjQjEgaXi4fE6mcZBwa9qc22is23B6R67KMcVyxyDWei+IP3sKmCcMX7Ibsg+ubZUpvKGxXZ27YgqFTPqCT2znD7K81YKfy+SVg3uW6epW114yZzClTQlarptYuE2mujxjZtx7ZUlwc9AhVi8CeiLwGO1wzTmpd/uctpner6oc335rvdJikNmc1cFKCK+2irew1bgUJHuN+LJA0y5iVXKvojiKZ2Ii7QKXn19Ssg1FoJ3x2NWA06wc0CnruLsCAwEAAaMhMB8wHQYDVR0OBBYEFDAr/HCMaGqmcDJa5oualVdWAEBEMA0GCSqGSIb3DQEBCwUAA4IBAQAiUke5mA86R/X4visjceUlv5jVzCn/SIq6Gm9/wCqtSxYvifRXxwNpQTOyvHhrY/IJLRUp2g9/fDELYd65t9Dp+N8SznhfB6/Cl7P7FRo99rIlj/q7JXa8UB/vLJPDlr+NREvAkMwUs1sDhL3kSuNBoxrbLC5Jo4es+juQLXd9HcRraE4U3UZVhUS2xqjFOfaGsCbJEqqkjihssruofaxdKT1CPzPMANfREFJznNzkpJt4H0aMDgVzq69NxZ7t1JiIuc43xRjeiixQMRGMi1mAB75fTyfFJ/rWQ5J/9kh0HMZVtHsqICBF1tHMTMIK5rwoweY0cuCIpN7A/zMOQtoD";
                 var cert = new X509Certificate2(Convert.FromBase64String(certData));
                 AsymmetricAlgorithm publicKey;
-#if NETSTANDARD1_4
+#if NETCOREAPP2_0
                 publicKey = RSACertificateExtensions.GetRSAPublicKey(cert);
 #else
                 publicKey = cert.PublicKey.Key;
@@ -575,7 +575,7 @@ namespace Microsoft.IdentityModel.Tests
                 jsonWebKey.X5c.Add("MIIDJTCCAg2gAwIBAgIQGzlg2gNmfKRKBa6dqqZXxzANBgkqhkiG9w0BAQQFADAiMSAwHgYDVQQDExdLZXlTdG9yZVRlc3RDZXJ0aWZpY2F0ZTAeFw0xMTExMDkxODE5MDZaFw0zOTEyMzEyMzU5NTlaMCIxIDAeBgNVBAMTF0tleVN0b3JlVGVzdENlcnRpZmljYXRlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAns1cm8RU1hKZILPI6pB5Zoxn9mW2tSS0atV+o9FCn9NyeOktEOj1kEXOeIz0KfnqxgPMF1GpshuZBAhgjkyy2kNGE6Zx50CCJgq6XUatvVVJpMp8/FV18ynPf+/TRlF8V2HO3IVJ0XqRJ9fGA2f5xpOweWsdLYitdHbaDCl6IBNSXo52iNuqWAcB1k7jBlsnlXpuvslhLIzj60dnghAVA4ltS3NlFyw1Tz3pGlZQDt7x83IBHe7DA9bV3aJs1trkm1NzI1HoRS4vOqU3n4fn+DlfAE2vYKNkSi/PjuAX+1YQCq6e5uN/hOeSEqji8SsWC2nk/bMTKPwD67rn3jNC9wIDAQABo1cwVTBTBgNVHQEETDBKgBA3gSuALjvEuAVmF/x8knXvoSQwIjEgMB4GA1UEAxMXS2V5U3RvcmVUZXN0Q2VydGlmaWNhdGWCEBs5YNoDZnykSgWunaqmV8cwDQYJKoZIhvcNAQEEBQADggEBAFZvDA7PBh/vvFZb/QCBelTyD2Yqij16v3tk30A3Akli6UIILdbbOcA5BiPktT1kJxcsgSXNHUODlfG2Fy9HTqwunr8G7FYniOUXPVrRL+HwhKOzRFDMUS3+On+ZDzum7rbpm3SYlnJDyNb8wynPw/bXQw72jGjt63uh6OnkYE8fJ8iPfVWOenZkP/IXPIXK/bBwLMDJ1y77ZauPYbp7oiQ/991pn0c7F4ugT9LYmbAdJKhiainOaoBTvIHN8/lMZ8gHUuxvOJhPrbgo3NTqvT1/3kfD0AISP4R3pH0QL/0m7cO34nK4rFFLZs1sFUguYUJhfkyq1N8MiyyAqRmrvBQ=");
                 jsonWebKey.Kty = JsonWebAlgorithmsKeyTypes.RSA;
                 AsymmetricAlgorithm publicKey;
-#if NETSTANDARD1_4
+#if NETCOREAPP2_0
                 publicKey = RSACertificateExtensions.GetRSAPublicKey(DefaultCert_2048);
 #else
                 publicKey = DefaultCert_2048.PublicKey.Key;
@@ -598,7 +598,7 @@ namespace Microsoft.IdentityModel.Tests
                 jsonWebKey.Kty = JsonWebAlgorithmsKeyTypes.RSA;
                 var cert = new X509Certificate2(Convert.FromBase64String(certData));
                 AsymmetricAlgorithm publicKey;
-#if NETSTANDARD1_4
+#if NETCOREAPP2_0
                 publicKey = RSACertificateExtensions.GetRSAPublicKey(cert);
 #else
                 publicKey = cert.PublicKey.Key;
@@ -616,7 +616,7 @@ namespace Microsoft.IdentityModel.Tests
             get
             {
                 AsymmetricAlgorithm publicKey;
-#if NETSTANDARD1_4
+#if NETCOREAPP2_0
                 publicKey = RSACertificateExtensions.GetRSAPublicKey(DefaultCert_2048);
 #else
                 publicKey = DefaultCert_2048.PublicKey.Key;
@@ -638,7 +638,7 @@ namespace Microsoft.IdentityModel.Tests
                 var certData = "MIIDBTCCAe2gAwIBAgIQY4RNIR0dX6dBZggnkhCRoDANBgkqhkiG9w0BAQsFADAtMSswKQYDVQQDEyJhY2NvdW50cy5hY2Nlc3Njb250cm9sLndpbmRvd3MubmV0MB4XDTE3MDIxMzAwMDAwMFoXDTE5MDIxNDAwMDAwMFowLTErMCkGA1UEAxMiYWNjb3VudHMuYWNjZXNzY29udHJvbC53aW5kb3dzLm5ldDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMBEizU1OJms31S/ry7iav/IICYVtQ2MRPhHhYknHImtU03sgVk1Xxub4GD7R15i9UWIGbzYSGKaUtGU9lP55wrfLpDjQjEgaXi4fE6mcZBwa9qc22is23B6R67KMcVyxyDWei+IP3sKmCcMX7Ibsg+ubZUpvKGxXZ27YgqFTPqCT2znD7K81YKfy+SVg3uW6epW114yZzClTQlarptYuE2mujxjZtx7ZUlwc9AhVi8CeiLwGO1wzTmpd/uctpner6oc335rvdJikNmc1cFKCK+2irew1bgUJHuN+LJA0y5iVXKvojiKZ2Ii7QKXn19Ssg1FoJ3x2NWA06wc0CnruLsCAwEAAaMhMB8wHQYDVR0OBBYEFDAr/HCMaGqmcDJa5oualVdWAEBEMA0GCSqGSIb3DQEBCwUAA4IBAQAiUke5mA86R/X4visjceUlv5jVzCn/SIq6Gm9/wCqtSxYvifRXxwNpQTOyvHhrY/IJLRUp2g9/fDELYd65t9Dp+N8SznhfB6/Cl7P7FRo99rIlj/q7JXa8UB/vLJPDlr+NREvAkMwUs1sDhL3kSuNBoxrbLC5Jo4es+juQLXd9HcRraE4U3UZVhUS2xqjFOfaGsCbJEqqkjihssruofaxdKT1CPzPMANfREFJznNzkpJt4H0aMDgVzq69NxZ7t1JiIuc43xRjeiixQMRGMi1mAB75fTyfFJ/rWQ5J/9kh0HMZVtHsqICBF1tHMTMIK5rwoweY0cuCIpN7A/zMOQtoD";
                 var cert = new X509Certificate2(Convert.FromBase64String(certData));
                 AsymmetricAlgorithm publicKey;
-#if NETSTANDARD1_4
+#if NETCOREAPP2_0
                 publicKey = RSACertificateExtensions.GetRSAPublicKey(cert);
 #else
                 publicKey = cert.PublicKey.Key;

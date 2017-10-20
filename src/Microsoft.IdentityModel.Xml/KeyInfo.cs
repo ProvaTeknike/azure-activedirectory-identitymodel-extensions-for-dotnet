@@ -28,16 +28,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
-
-[assembly: InternalsVisibleTo("Microsoft.IdentityModel.Tokens.Saml, PublicKey=0024000004800000940000000602000000240000525341310004000001000100b5fc90e7027f67" +
-"871e773a8fde8938c81dd402ba65b9201d60593e96c492651e889cc13f1415ebb53fac1131ae0b" +
-"d333c5ee6021672d9718ea31a8aebd0da0072f25d87dba6fc90ffd598ed4da35e44c398c454307" +
-"e8e33b8426143daec9f596836f97c8f74750e5975c64e2189f45def46b2a2b1247adc3652bf5c3" +
-"08055da9")]
 
 namespace Microsoft.IdentityModel.Xml
 {
@@ -86,7 +79,7 @@ namespace Microsoft.IdentityModel.Xml
                 if (rsaKey.Parameters.Equals(default(RSAParameters)))
                     rsaParameters = rsaKey.Rsa.ExportParameters(false);
         
-                RSAKeyValue = new RSAKeyValue(Base64UrlEncoder.Encode(rsaParameters.Modulus), Base64UrlEncoder.Encode(rsaParameters.Exponent));
+                RSAKeyValue = new RSAKeyValue(Convert.ToBase64String(rsaParameters.Modulus), Convert.ToBase64String(rsaParameters.Exponent));
             }
         }
 
@@ -155,7 +148,6 @@ namespace Microsoft.IdentityModel.Xml
             if (key is X509SecurityKey x509SecurityKey)
             {
                 return Matches(x509SecurityKey);
-
             }
             else if (key is RsaSecurityKey rsaSecurityKey)
             {
@@ -188,14 +180,14 @@ namespace Microsoft.IdentityModel.Xml
         {
             if (!key.Parameters.Equals(default(RSAParameters)))
             {
-                return (RSAKeyValue.Exponent.Equals(Base64UrlEncoder.Encode(key.Parameters.Exponent))
-                     && RSAKeyValue.Modulus.Equals(Base64UrlEncoder.Encode(key.Parameters.Modulus)));
+                return (RSAKeyValue.Exponent.Equals(Convert.ToBase64String(key.Parameters.Exponent))
+                     && RSAKeyValue.Modulus.Equals(Convert.ToBase64String(key.Parameters.Modulus)));
             }
             else if (key.Rsa != null)
             {
                 var parameters = key.Rsa.ExportParameters(false);
-                return (RSAKeyValue.Exponent.Equals(Base64UrlEncoder.Encode(parameters.Exponent))
-                     && RSAKeyValue.Modulus.Equals(Base64UrlEncoder.Encode(parameters.Modulus)));
+                return (RSAKeyValue.Exponent.Equals(Convert.ToBase64String(parameters.Exponent))
+                     && RSAKeyValue.Modulus.Equals(Convert.ToBase64String(parameters.Modulus)));
             }
 
             return false;
@@ -205,8 +197,8 @@ namespace Microsoft.IdentityModel.Xml
         {
             if (RSAKeyValue != null)
             {
-                return (RSAKeyValue.Exponent.Equals(Base64UrlEncoder.Encode(key.E))
-                        && RSAKeyValue.Modulus.Equals(Base64UrlEncoder.Encode(key.N)));
+                return (RSAKeyValue.Exponent.Equals(Convert.FromBase64String(key.E))
+                        && RSAKeyValue.Modulus.Equals(Convert.FromBase64String(key.N)));
             }
 
             foreach (var x5c in key.X5c)
