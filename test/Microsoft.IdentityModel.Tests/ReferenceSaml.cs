@@ -265,6 +265,17 @@ namespace Microsoft.IdentityModel.Tests
             }
         }
 
+        public static SamlAssertionTestSet SamlAssertionEmpty
+        {
+            get
+            {
+                return new SamlAssertionTestSet
+                {
+                    Xml = XmlGenerator.SamlAssertionXml(SamlConstants.MinorVersionValue, SamlConstants.MinorVersionValue, Default.SamlAssertionID, Default.Issuer, Default.IssueInstant, null, null, null, null)
+                };
+            }
+        }
+
         public static SamlAssertionTestSet SamlAssertionWrongMajorVersion
         {
             get

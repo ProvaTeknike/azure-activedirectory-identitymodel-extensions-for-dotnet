@@ -313,6 +313,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         AssertionTestSet = ReferenceSaml.SamlAssertionMultiStatements_DifferentStatementType,
                         SamlSerializer = new SamlSerializerPublic(),
                         TestId = nameof(ReferenceSaml.SamlAssertionMultiStatements_DifferentStatementType)
+                    },
+                     new SamlTheoryData
+                    {
+                        ExpectedException = new ExpectedException(typeof(SamlSecurityTokenReadException), "IDX11130"),
+                        AssertionTestSet = ReferenceSaml.SamlAssertionEmpty,
+                        SamlSerializer = new SamlSerializerPublic(),
+                        TestId = nameof(ReferenceSaml.SamlAssertionEmpty)
                     }
                 };
             }
