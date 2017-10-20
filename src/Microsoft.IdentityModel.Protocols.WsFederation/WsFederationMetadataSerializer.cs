@@ -191,6 +191,8 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation
 
             var roleDescriptor = new SecurityTokenServiceTypeRoleDescriptor();
 
+            bool isEmptyElement = reader.IsEmptyElement;
+
             // <RoleDescriptorr>
             reader.ReadStartElement();
             while (reader.IsStartElement())
@@ -204,7 +206,8 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation
             }
 
             // </RoleDescriptorr>
-            reader.ReadEndElement();
+            if (!isEmptyElement)
+                reader.ReadEndElement();
 
             if (roleDescriptor.KeyInfos.Count == 0)
                 Logger.WriteWarning(LogMessages.IDX22806);
@@ -223,21 +226,33 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation
         /// <exception cref="XmlReadException">if error occurs when reading PassiveRequestorEndpoint</exception>
         protected virtual string ReadPassiveRequestorEndpoint(XmlReader reader)
         {
+
             XmlUtil.CheckReaderOnEntry(reader, Elements.PassiveRequestorEndpoint, Namespaces.FederationNamespace);
+
+            if (reader.IsEmptyElement)
+                throw XmlUtil.LogReadException(LogMessages.IDX22812);
+
+            string tokenEndpoint = null;
 
             // <PassiveRequestorEndpoint>
             reader.ReadStartElement();
             reader.MoveToContent();
 
-            XmlUtil.CheckReaderOnEntry(reader, Elements.EndpointReference, Namespaces.AddressingNamspace);
+            if (reader.IsEmptyElement)
+                throw XmlUtil.LogReadException(LogMessages.IDX22813);
+
+            XmlUtil.CheckReaderOnEntry(reader, Elements.EndpointReference, Namespaces.AddressingNamspace);        
             reader.ReadStartElement(Elements.EndpointReference, Namespaces.AddressingNamspace);  // EndpointReference
             reader.MoveToContent();
+       
+            if (reader.IsEmptyElement)
+                throw XmlUtil.LogReadException(LogMessages.IDX22803);
 
             XmlUtil.CheckReaderOnEntry(reader, Elements.Address, Namespaces.AddressingNamspace);
             reader.ReadStartElement(Elements.Address, Namespaces.AddressingNamspace);  // Address
             reader.MoveToContent();
 
-            var tokenEndpoint = Trim(reader.ReadContentAsString());
+            tokenEndpoint = Trim(reader.ReadContentAsString());
 
             if (string.IsNullOrEmpty(tokenEndpoint))
                 throw XmlUtil.LogReadException(LogMessages.IDX22803);
