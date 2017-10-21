@@ -7,11 +7,17 @@ namespace Microsoft.IdentityModel.Tokens
 {
     internal class MethodInAssembly
     {
-        public delegate AsymmetricAlgorithm GetKeyDelegate(X509Certificate2 certificate);
+        public delegate AsymmetricAlgorithm GetKeyDelegateAsymmetricAlgorithm(X509Certificate2 certificate);
 
-        private static GetKeyDelegate _getPrivateKeyDelegate = null;
+        public delegate RSA GetKeyDelegateRSA(X509Certificate2 certificate);
 
-        private static GetKeyDelegate _getPublicKeyDelegate = null;
+        private static GetKeyDelegateAsymmetricAlgorithm _getPrivateKeyDelegateAsymmetricAlgorithm = null;
+
+        private static GetKeyDelegateAsymmetricAlgorithm _getPublicKeyDelegateAsymmetricAlgorithm = null;
+
+        private static GetKeyDelegateRSA _getPrivateKeyDelegateRSA = null;
+
+        private static GetKeyDelegateRSA _getPublicKeyDelegateRSA = null;
 
         private static bool _delegateSet = false;
 
@@ -40,36 +46,36 @@ namespace Microsoft.IdentityModel.Tokens
                     var getPrivateKeyMethod = type.GetMethod("GetRSAPrivateKey");
                     if (getPrivateKeyMethod != null)
                     {
-                        _getPrivateKeyDelegate = certificate =>
+                        _getPrivateKeyDelegateRSA = certificate =>
                         {
                             object[] staticParameters = { certificate };
-                            return getPrivateKeyMethod.Invoke(null, staticParameters) as AsymmetricAlgorithm;
+                            return getPrivateKeyMethod.Invoke(null, staticParameters) as RSA;
                         };
                     }
 
                     var getPublicKeyMethod = type.GetMethod("GetRSAPublicKey");
                     if (getPublicKeyMethod != null)
                     {
-                        _getPublicKeyDelegate = certificate =>
+                        _getPublicKeyDelegateRSA = certificate =>
                         {
                             object[] staticParameters = { certificate };
-                            return getPublicKeyMethod.Invoke(null, staticParameters) as AsymmetricAlgorithm;
+                            return getPublicKeyMethod.Invoke(null, staticParameters) as RSA;
                         };
                     }
                 }
             }
 
-            if (_getPrivateKeyDelegate == null)
+            if (_getPrivateKeyDelegateAsymmetricAlgorithm == null)
             {
-                _getPrivateKeyDelegate = certificate =>
+                _getPrivateKeyDelegateAsymmetricAlgorithm = certificate =>
                 {
                     return certificate.PrivateKey;
                 };
             }
 
-            if (_getPublicKeyDelegate == null)
+            if (_getPublicKeyDelegateAsymmetricAlgorithm == null)
             {
-                _getPublicKeyDelegate = certificate =>
+                _getPublicKeyDelegateAsymmetricAlgorithm = certificate =>
                 {
                     return certificate.PublicKey.Key;
                 };
@@ -87,16 +93,20 @@ namespace Microsoft.IdentityModel.Tokens
 #endif
         }
 
-        public static AsymmetricAlgorithm GetPrivateKey(X509Certificate2 certificate)
+        public static void SetPrivateKey(X509Certificate2 certificate, RsaAlgorithm rsaAlgorithm)
         {
-            SetDelegate();
-            return _getPrivateKeyDelegate(certificate);
+            if (_getPrivateKeyDelegateRSA != null)
+                rsaAlgorithm.rsa = _getPrivateKeyDelegateRSA(certificate);
+            else
+                rsaAlgorithm.rsaCryptoServiceProvider = _getPrivateKeyDelegateAsymmetricAlgorithm(certificate) as RSACryptoServiceProvider;
         }
 
-        public static AsymmetricAlgorithm GetPublicKey(X509Certificate2 certificate)
+        public static void SetPublicKey(X509Certificate2 certificate, RsaAlgorithm rsaAlgorithm)
         {
-            SetDelegate();
-            return _getPublicKeyDelegate(certificate);
+            if (_getPublicKeyDelegateRSA != null)
+                rsaAlgorithm.rsa = _getPublicKeyDelegateRSA(certificate);
+            else
+                rsaAlgorithm.rsaCryptoServiceProvider = _getPublicKeyDelegateAsymmetricAlgorithm(certificate) as RSACryptoServiceProvider;
         }
     }
 }
