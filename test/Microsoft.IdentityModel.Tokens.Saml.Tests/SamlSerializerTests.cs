@@ -710,6 +710,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         AuthenticationStatementTestSet = ReferenceSaml.SamlAuthenticationStatementMultiBinding,
                         SamlSerializer = new SamlSerializerPublic(),
                         TestId = nameof(ReferenceSaml.SamlAuthenticationStatementMultiBinding)
+                    },
+                    new SamlTheoryData
+                    {
+                        ExpectedException = new ExpectedException(typeof(SamlSecurityTokenReadException), "IDX11112:", typeof(XmlReadException)),
+                        AuthenticationStatementTestSet = ReferenceSaml.SamlAuthenticationStatementEmpty,
+                        SamlSerializer = new SamlSerializerPublic(),
+                        TestId = nameof(ReferenceSaml.SamlAuthenticationStatementEmpty)
                     }
                 };
             }
@@ -805,6 +812,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         ExpectedException = new ExpectedException(typeof(SamlSecurityTokenException), "IDX11508:"),
                         SamlSerializer = new SamlSerializerPublic(),
                         TestId = "Invalid DecisionType",
+                    },
+                    new SamlTheoryData
+                    {
+                        ExpectedException = new ExpectedException(typeof(SamlSecurityTokenReadException), "IDX11136:"),
+                        AuthorizationDecisionTestSet = ReferenceSaml.SamlAuthorizationDecisionEmpty,
+                        SamlSerializer = new SamlSerializerPublic(),
+                        TestId = nameof(ReferenceSaml.SamlAuthorizationDecisionEmpty)
                     }
                 };
             }
@@ -871,6 +885,12 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         ConditionsTestSet = ReferenceSaml.SamlConditionsMultiCondition,
                         SamlSerializer = new SamlSerializerPublic(),
                         TestId = nameof(ReferenceSaml.SamlConditionsMultiCondition)
+                    },
+                    new SamlTheoryData
+                    {
+                        ConditionsTestSet = ReferenceSaml.SamlConditionsEmpty,
+                        SamlSerializer = new SamlSerializerPublic(),
+                        TestId = nameof(ReferenceSaml.SamlConditionsEmpty)
                     }
                 };
             }
@@ -939,6 +959,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         EvidenceTestSet = ReferenceSaml.SamlEvidenceWithAssertionIDRefAndAssertions,
                         SamlSerializer = new SamlSerializerPublic(),
                         TestId = nameof(ReferenceSaml.SamlEvidenceWithAssertionIDRefAndAssertions)
+                    },
+                    new SamlTheoryData
+                    {
+                        ExpectedException = new ExpectedException(typeof(SamlSecurityTokenReadException), "IDX11133"),
+                        EvidenceTestSet = ReferenceSaml.SamlEvidenceEmpty,
+                        SamlSerializer = new SamlSerializerPublic(),
+                        TestId = nameof(ReferenceSaml.SamlEvidenceEmpty)
                     }
                 };
             }
@@ -1039,6 +1066,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         SamlSerializer = new SamlSerializerPublic(),
                         SubjectTestSet = ReferenceSaml.SamlSubjectWithMultiConfirmationMethods,
                         TestId = nameof(ReferenceSaml.SamlSubjectWithMultiConfirmationMethods)
+                    },
+                    new SamlTheoryData
+                    {
+                        ExpectedException = new ExpectedException(typeof(SamlSecurityTokenReadException), "IDX11107"),
+                        SamlSerializer = new SamlSerializerPublic(),
+                        SubjectTestSet = ReferenceSaml.SamlSubjectEmpty,
+                        TestId = nameof(ReferenceSaml.SamlSubjectEmpty)
                     }
                 };
             }

@@ -741,6 +741,17 @@ namespace Microsoft.IdentityModel.Tests
             }
         }
 
+        public static SamlAuthenticationStatementTestSet SamlAuthenticationStatementEmpty
+        {
+            get
+            {
+                return new SamlAuthenticationStatementTestSet
+                {
+                    Xml = @"<AuthenticationStatement AuthenticationMethod=""urn:oasis:names:tc:SAML:1.0:am:password"" AuthenticationInstant =""2017-03-18T18:33:37.080Z"" xmlns=""urn:oasis:names:tc:SAML:1.0:assertion""/>"
+                };
+            }
+        }
+
         public static SamlAuthenticationStatementTestSet SamlAuthenticationStatementValid
         {
             get
@@ -917,6 +928,17 @@ namespace Microsoft.IdentityModel.Tests
                 };
             }
         }
+
+        public static SamlAuthorizationDecisionStatementTestSet SamlAuthorizationDecisionEmpty
+        {
+            get
+            {
+                return new SamlAuthorizationDecisionStatementTestSet
+                {
+                    Xml = @"<AuthorizationDecisionStatement Resource=""http://www.w3.org/"" Decision=""Permit"" xmlns=""urn:oasis:names:tc:SAML:1.0:assertion""/>"
+                };
+            }
+        }
         #endregion
 
         #region SamlConditions
@@ -982,6 +1004,20 @@ namespace Microsoft.IdentityModel.Tests
                 };
             }
         }
+
+        public static SamlConditionsTestSet SamlConditionsEmpty
+        {
+            get
+            {
+                return new SamlConditionsTestSet
+                {
+                    Conditions = new SamlConditions(Default.NotBefore, Default.NotOnOrAfter, null),
+                    Xml = @"<Conditions NotBefore=""2017-03-17T18:33:37.080Z"" NotOnOrAfter=""2017-03-18T18:33:37.080Z"" xmlns=""urn:oasis:names:tc:SAML:1.0:assertion""/>"
+                };
+            }
+        }
+
+
         #endregion
 
         #region SamlEvdience
@@ -1040,6 +1076,17 @@ namespace Microsoft.IdentityModel.Tests
                 {
                     Evidence = new SamlEvidence(new string[] { Default.SamlAssertionID }, new List<SamlAssertion> { SamlAssertionNoSignature.Assertion }),
                     Xml = XmlGenerator.SamlEvidenceXml(XmlGenerator.SamlAssertionIDRefXml(Default.SamlAssertionID), SamlAssertionNoSignature.Xml)
+                };
+            }
+        }
+
+        public static SamlEvidenceTestSet SamlEvidenceEmpty
+        {
+            get
+            {
+                return new SamlEvidenceTestSet
+                {
+                    Xml = "<Evidence xmlns=\"urn:oasis:names:tc:SAML:1.0:assertion\"/>"
                 };
             }
         }
@@ -1168,6 +1215,17 @@ namespace Microsoft.IdentityModel.Tests
                     Subject = new SamlSubject(Default.NameIdentifierFormat, Default.NameQualifier, Default.Subject, new List<string> { Default.SamlConfirmationMethod, Default.SamlConfirmationMethod }, Default.SamlConfirmationData),
                     Xml = XmlGenerator.SamlSubjectXml(XmlGenerator.SamlNameIdentifierXml(Default.NameQualifier, Default.NameIdentifierFormat, Default.Subject),
                                 XmlGenerator.SamlSubjectConfirmationXml(new List<string> { XmlGenerator.SamlConfirmationMethodXml(Default.SamlConfirmationMethod), XmlGenerator.SamlConfirmationMethodXml(Default.SamlConfirmationMethod) }, Default.SamlConfirmationData))
+                };
+            }
+        }
+
+        public static SamlSubjectTestSet SamlSubjectEmpty
+        {
+            get
+            {
+                return new SamlSubjectTestSet
+                {
+                    Xml = "<Subject xmlns =\"urn:oasis:names:tc:SAML:1.0:assertion\"/>"
                 };
             }
         }

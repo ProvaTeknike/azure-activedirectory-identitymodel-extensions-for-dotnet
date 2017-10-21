@@ -628,6 +628,11 @@ namespace Microsoft.IdentityModel.Tokens.Saml
 
                 statement.Decision = decision;
 
+                bool isEmpty = reader.IsEmptyElement;
+
+                if (isEmpty)
+                    throw LogReadException(LogMessages.IDX11136);
+
                 reader.ReadStartElement();
                 statement.Subject = ReadSubject(reader);
                 while (reader.IsStartElement())
@@ -857,6 +862,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml
             try
             {
                 var subject = new SamlSubject();
+
+                if (reader.IsEmptyElement)
+                    throw LogReadException(LogMessages.IDX11107);
 
                 reader.Read();
 
