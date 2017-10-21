@@ -108,5 +108,21 @@ namespace Microsoft.IdentityModel.Tokens
             else
                 rsaAlgorithm.rsaCryptoServiceProvider = _getPublicKeyDelegateAsymmetricAlgorithm(certificate) as RSACryptoServiceProvider;
         }
+
+        public static AsymmetricAlgorithm GetPrivateKey(X509Certificate2 certificate)
+        {
+            if (_getPrivateKeyDelegateRSA != null)
+                return _getPrivateKeyDelegateRSA(certificate) as AsymmetricAlgorithm;
+            else
+                return _getPrivateKeyDelegateAsymmetricAlgorithm(certificate);
+        }
+
+        public static AsymmetricAlgorithm GetPublicKey(X509Certificate2 certificate)
+        {
+            if (_getPublicKeyDelegateRSA != null)
+                return _getPublicKeyDelegateRSA(certificate) as AsymmetricAlgorithm;
+            else
+                return _getPublicKeyDelegateAsymmetricAlgorithm(certificate);
+        }
     }
 }
