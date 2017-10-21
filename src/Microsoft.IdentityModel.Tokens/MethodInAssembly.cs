@@ -11,6 +11,8 @@ namespace Microsoft.IdentityModel.Tokens
 
         public delegate RSA GetKeyDelegateRSA(X509Certificate2 certificate);
 
+        public delegate byte[] SignDataDelegate(byte[] data, System.Security.Cryptography.HashAlgorithmName hashAlgorithm, System.Security.Cryptography.RSASignaturePadding padding);
+
         private static GetKeyDelegateAsymmetricAlgorithm _getPrivateKeyDelegateAsymmetricAlgorithm = null;
 
         private static GetKeyDelegateAsymmetricAlgorithm _getPublicKeyDelegateAsymmetricAlgorithm = null;

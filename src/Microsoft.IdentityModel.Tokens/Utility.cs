@@ -59,7 +59,6 @@ namespace Microsoft.IdentityModel.Tokens
     {
 #if NETSTANDARD1_4
 #else
-        public RSACryptoServiceProvider rsaCryptoServiceProvider;
         public RSACryptoServiceProviderProxy rsaCryptoServiceProviderProxy;
 #endif
         public RSA rsa;
