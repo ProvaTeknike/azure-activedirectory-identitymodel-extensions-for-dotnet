@@ -95,18 +95,26 @@ namespace Microsoft.IdentityModel.Tokens
 
         public static void SetPrivateKey(X509Certificate2 certificate, RsaAlgorithm rsaAlgorithm)
         {
+#if NETSTANDARD1_4
+            rsaAlgorithm.rsa = _getPrivateKeyDelegateRSA(certificate);
+#else
             if (_getPrivateKeyDelegateRSA != null)
                 rsaAlgorithm.rsa = _getPrivateKeyDelegateRSA(certificate);
             else
-                rsaAlgorithm.rsaCryptoServiceProvider = _getPrivateKeyDelegateAsymmetricAlgorithm(certificate) as RSACryptoServiceProvider;
+                rsaAlgorithm.rsaCryptoServiceProviderProxy = new RSACryptoServiceProviderProxy(_getPrivateKeyDelegateAsymmetricAlgorithm(certificate) as RSACryptoServiceProvider);
+#endif
         }
 
         public static void SetPublicKey(X509Certificate2 certificate, RsaAlgorithm rsaAlgorithm)
         {
+#if NETSTANDARD1_4
+            rsaAlgorithm.rsa = _getPublicKeyDelegateRSA(certificate);
+#else
             if (_getPublicKeyDelegateRSA != null)
                 rsaAlgorithm.rsa = _getPublicKeyDelegateRSA(certificate);
             else
-                rsaAlgorithm.rsaCryptoServiceProvider = _getPublicKeyDelegateAsymmetricAlgorithm(certificate) as RSACryptoServiceProvider;
+                rsaAlgorithm.rsaCryptoServiceProviderProxy = new RSACryptoServiceProviderProxy(_getPublicKeyDelegateAsymmetricAlgorithm(certificate) as RSACryptoServiceProvider);
+#endif
         }
 
         public static AsymmetricAlgorithm GetPrivateKey(X509Certificate2 certificate)
