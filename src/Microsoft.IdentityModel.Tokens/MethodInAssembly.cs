@@ -30,7 +30,7 @@ namespace Microsoft.IdentityModel.Tokens
 
             _delegateSet = true;
 
-#if (NET45 || NET451 || NET452)
+#if (NET45 || NET451 || NET452 || NET46)
             Assembly systemCoreAssembly = null;
             foreach (var assem in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -83,12 +83,12 @@ namespace Microsoft.IdentityModel.Tokens
                 };
             }
 #else
-            _getPrivateKeyDelegate = certificate =>
+            _getPrivateKeyDelegateRSA = certificate =>
             {
                 return RSACertificateExtensions.GetRSAPrivateKey(certificate);
             };
 
-            _getPublicKeyDelegate = certificate =>
+            _getPublicKeyDelegateRSA = certificate =>
             {
                 return RSACertificateExtensions.GetRSAPublicKey(certificate);
             };
@@ -97,6 +97,7 @@ namespace Microsoft.IdentityModel.Tokens
 
         public static void SetPrivateKey(X509Certificate2 certificate, RsaAlgorithm rsaAlgorithm)
         {
+            SetDelegate();
 #if NETSTANDARD1_4
             rsaAlgorithm.rsa = _getPrivateKeyDelegateRSA(certificate);
 #else
@@ -109,6 +110,7 @@ namespace Microsoft.IdentityModel.Tokens
 
         public static void SetPublicKey(X509Certificate2 certificate, RsaAlgorithm rsaAlgorithm)
         {
+            SetDelegate();
 #if NETSTANDARD1_4
             rsaAlgorithm.rsa = _getPublicKeyDelegateRSA(certificate);
 #else
@@ -121,6 +123,7 @@ namespace Microsoft.IdentityModel.Tokens
 
         public static AsymmetricAlgorithm GetPrivateKey(X509Certificate2 certificate)
         {
+            SetDelegate();
             if (_getPrivateKeyDelegateRSA != null)
                 return _getPrivateKeyDelegateRSA(certificate) as AsymmetricAlgorithm;
             else
@@ -129,6 +132,7 @@ namespace Microsoft.IdentityModel.Tokens
 
         public static AsymmetricAlgorithm GetPublicKey(X509Certificate2 certificate)
         {
+            SetDelegate();
             if (_getPublicKeyDelegateRSA != null)
                 return _getPublicKeyDelegateRSA(certificate) as AsymmetricAlgorithm;
             else

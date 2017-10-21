@@ -211,6 +211,10 @@ namespace Microsoft.IdentityModel.Tokens
                       || Algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap, StringComparison.Ordinal);
             try
             {
+                var padding = (Algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)
+            || Algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap))
+            ? RSAEncryptionPadding.OaepSHA1
+            : RSAEncryptionPadding.Pkcs1;
                 if (_rsa != null)
                     return _rsa.Decrypt(keyBytes, padding);
                 else if (_rsaCryptoServiceProviderProxy != null)
@@ -260,6 +264,10 @@ namespace Microsoft.IdentityModel.Tokens
                       || Algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap, StringComparison.Ordinal);
             try
             {
+                var padding = (Algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)
+            || Algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap, StringComparison.Ordinal))
+            ? RSAEncryptionPadding.OaepSHA1
+            : RSAEncryptionPadding.Pkcs1;
                 if (_rsa != null)
                     return _rsa.Encrypt(keyBytes, padding);
                 else if (_rsaCryptoServiceProviderProxy != null)

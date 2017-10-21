@@ -266,6 +266,39 @@ namespace Microsoft.IdentityModel.Tokens
             throw LogHelper.LogExceptionMessage(new ArgumentException(LogHelper.FormatInvariant(LogMessages.IDX10652, algorithm), nameof(algorithm)));
         }
 
+        /// <summary>
+        /// Returns the <see cref="HashAlgorithmName"/> instance.
+        /// </summary>
+        /// <param name="algorithm">The hash algorithm to use to create the hash value.</param>
+        protected virtual HashAlgorithmName GetMyHashAlgorithmName(string algorithm)
+        {
+            if (string.IsNullOrWhiteSpace(algorithm))
+                throw LogHelper.LogArgumentNullException("algorithm");
+
+            switch (algorithm)
+            {
+                case SecurityAlgorithms.EcdsaSha256:
+                case SecurityAlgorithms.EcdsaSha256Signature:
+                case SecurityAlgorithms.RsaSha256:
+                case SecurityAlgorithms.RsaSha256Signature:
+                    return HashAlgorithmName.SHA256;
+
+                case SecurityAlgorithms.EcdsaSha384:
+                case SecurityAlgorithms.EcdsaSha384Signature:
+                case SecurityAlgorithms.RsaSha384:
+                case SecurityAlgorithms.RsaSha384Signature:
+                    return HashAlgorithmName.SHA384;
+
+                case SecurityAlgorithms.EcdsaSha512:
+                case SecurityAlgorithms.EcdsaSha512Signature:
+                case SecurityAlgorithms.RsaSha512:
+                case SecurityAlgorithms.RsaSha512Signature:
+                    return HashAlgorithmName.SHA512;
+            }
+
+            throw LogHelper.LogExceptionMessage(new ArgumentOutOfRangeException(nameof(algorithm), LogHelper.FormatInvariant(LogMessages.IDX10652, algorithm)));
+        }
+
         private void ResolveAsymmetricAlgorithm(SecurityKey key, string algorithm, bool willCreateSignatures)
         {
             if (key == null)
@@ -332,7 +365,7 @@ namespace Microsoft.IdentityModel.Tokens
                 return _ecdsa.SignData(input, _hashAlgorithm);
 #else
             if (_rsa != null)
-                return _rsa.SignData(input, _hashAlgorithm, RSASignaturePadding.Pkcs1);
+                return _rsa.SignData(input, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             else if (_rsaCryptoServiceProviderProxy != null)
                 return _rsaCryptoServiceProviderProxy.SignData(input, _hashAlgorithm);
             else if (_ecdsa != null)
@@ -372,7 +405,7 @@ namespace Microsoft.IdentityModel.Tokens
                 return _ecdsa.VerifyData(input, signature, _hashAlgorithm);
 #else
             if (_rsa != null)
-                return _rsa.VerifyData(input, signature, _hashAlgorithm, RSASignaturePadding.Pkcs1);
+                return _rsa.VerifyData(input, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             else if (_rsaCryptoServiceProviderProxy != null)
                 return _rsaCryptoServiceProviderProxy.VerifyData(input, _hashAlgorithm, signature);
             else if (_ecdsa != null)
